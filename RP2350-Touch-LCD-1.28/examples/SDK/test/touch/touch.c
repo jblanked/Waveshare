@@ -48,7 +48,7 @@ bool touch_init(uint8_t mode)
 
     touch_reset();
 
-    if (!touch_read(TOUCH_CHIP_ID) == 0xB5) // who am I
+    if (touch_read(TOUCH_CHIP_ID) != 0xB5) // who am I
     {
         printf("Error: CST816T Not Detected.\r\n");
         return false;
