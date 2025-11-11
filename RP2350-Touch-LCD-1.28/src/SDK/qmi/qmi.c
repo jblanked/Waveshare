@@ -18,6 +18,8 @@ static unsigned int imu_timestamp = 0;
 static struct QMI8658Config QMI8658_config;
 static unsigned char QMI8658_slave_addr = QMI8658_SLAVE_ADDR_L;
 
+static bool initialized = false;
+
 // config accelerometer
 static void qmi_config_acc(enum QMI8658_AccRange range, enum QMI8658_AccOdr odr, bool lpfEnable, bool stEnable)
 {
@@ -183,6 +185,10 @@ void qmi_apply_config(struct QMI8658Config const *config)
 // initialize QMI8658
 bool qmi_init(void)
 {
+    if (initialized)
+    {
+        return true;
+    }
     unsigned char QMI8658_chip_id = 0x00;
     unsigned char QMI8658_revision_id = 0x00;
     unsigned char QMI8658_slave[2] = {QMI8658_SLAVE_ADDR_L, QMI8658_SLAVE_ADDR_H};
@@ -229,6 +235,7 @@ bool qmi_init(void)
             qmi_read_register(QMI8658Register_Ctrl6, &read_data, 1);
             qmi_read_register(QMI8658Register_Ctrl7, &read_data, 1);
         }
+        initialized = true;
         return true;
     }
     else
