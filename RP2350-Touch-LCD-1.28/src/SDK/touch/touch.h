@@ -100,6 +100,6 @@ extern "C"
 	void touch_set_callback(gpio_irq_callback_t callback);
 	void touch_write(uint8_t reg, uint8_t value);
 
-#ifdef __cpluspluss
+#ifdef __cplusplus
 }
 #endif
