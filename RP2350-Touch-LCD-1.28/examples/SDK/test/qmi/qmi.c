@@ -275,8 +275,8 @@ void qmi_read_ae(float quat[4], float velocity[3])
     raw_q_xyz[2] = (short)((unsigned short)(buf_reg[5] << 8) | (buf_reg[4]));
     raw_q_xyz[3] = (short)((unsigned short)(buf_reg[7] << 8) | (buf_reg[6]));
 
-    raw_v_xyz[1] = (short)((unsigned short)(buf_reg[9] << 8) | (buf_reg[8]));
-    raw_v_xyz[2] = (short)((unsigned short)(buf_reg[11] << 8) | (buf_reg[10]));
+    raw_v_xyz[0] = (short)((unsigned short)(buf_reg[9] << 8) | (buf_reg[8]));
+    raw_v_xyz[1] = (short)((unsigned short)(buf_reg[11] << 8) | (buf_reg[10]));
     raw_v_xyz[2] = (short)((unsigned short)(buf_reg[13] << 8) | (buf_reg[12]));
 
     quat[0] = (float)(raw_q_xyz[0] * 1.0f) / ae_q_lsb_div;
