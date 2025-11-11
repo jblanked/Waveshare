@@ -467,5 +467,5 @@ bool qmi_write_register(unsigned char reg, unsigned char value)
         ret = i2c_write_blocking(QMI_I2C_PORT, QMI8658_slave_addr, data, 2, false);
     }
 
-    return (ret > 0) ? 0 : 1; // Return 0 for success, 1 for failure
+    return (ret > 0);
 }
