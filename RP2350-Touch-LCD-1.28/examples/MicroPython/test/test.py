@@ -54,13 +54,13 @@ def main():
         lcd.fill_screen(COLOR_BLACK)
 
         if inp.gesture != TOUCH_GESTURE_NONE:
-            inp.reset()
             gesture_text = f"Gesture: {inp.gesture}"
             point_text = f"Point: X={inp.point[0]} Y={inp.point[1]}"
             battery_text = f"Battery: {bat.percentage}% {bat.voltage}mV"
             lcd.draw_text(80, 10, gesture_text, COLOR_WHITE)
             lcd.draw_text(60, 30, point_text, COLOR_WHITE)
             lcd.draw_text(70, 50, battery_text, COLOR_WHITE)
+            inp.reset()
 
         # Read accelerometer and gyroscope data
         acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, tim_count = qmi.read_xyz()
