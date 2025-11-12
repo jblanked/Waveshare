@@ -3,11 +3,35 @@
 static bool lcd_initialized = false; // flag to indicate if the LCD is initialized
 
 // Static framebuffer (16-bit per pixel for RGB565)
-static uint16_t framebuffer[LCD_WIDTH * LCD_HEIGHT];
+static uint8_t framebuffer[LCD_WIDTH * LCD_HEIGHT];
+static uint16_t palette[256]; // 256-color palette for RGB332
 static uint8_t backlight_level;
 static uint slice_num;
 
 static FontTable *current_font = NULL;
+
+/******************************************************************************
+ * function: Convert a 16-bit RGB565 color to an 8-bit RGB332 color
+ * parameter:
+ *    color : 16-bit RGB565 color value
+ * returns: 8-bit RGB332 color value
+ ******************************************************************************/
+static uint8_t lcd_color565_to_332(uint16_t color)
+{
+    return ((color & 0xE000) >> 8) | ((color & 0x0700) >> 6) | ((color & 0x0018) >> 3);
+}
+/******************************************************************************
+ * function: Convert 8-bit RGB332 components to a 16-bit RGB565 color
+ * parameter:
+ *    r : Red component (0-255)
+ *    g : Green component (0-255)
+ *    b : Blue component (0-255)
+ * returns: 16-bit RGB565 color value
+ ******************************************************************************/
+static uint16_t lcd_color332_to_565(uint8_t r, uint8_t g, uint8_t b)
+{
+    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+}
 
 /******************************************************************************
  * function: Initialize the backlight PWM for the LCD
@@ -40,7 +64,8 @@ void lcd_draw_pixel(uint8_t x, uint8_t y, uint16_t color)
     {
         return; // bounds check
     }
-    framebuffer[y * LCD_WIDTH + x] = color;
+    // Convert to 8-bit and store
+    framebuffer[y * LCD_WIDTH + x] = lcd_color565_to_332(color);
 }
 
 /******************************************************************************
@@ -60,13 +85,13 @@ void lcd_draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t 
     int sx = (x1 < x2) ? 1 : -1;
     int sy = (y1 < y2) ? 1 : -1;
     int err = dx - dy;
-
+    const uint8_t color_index = lcd_color565_to_332(color);
     while (true)
     {
         // Draw pixel if within bounds
         if (x1 < LCD_WIDTH && y1 < LCD_HEIGHT)
         {
-            framebuffer[y1 * LCD_WIDTH + x1] = color;
+            framebuffer[y1 * LCD_WIDTH + x1] = color_index;
         }
 
         // Check if we've reached the end point
@@ -99,11 +124,12 @@ returns: none
 ******************************************************************************/
 void lcd_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
 {
+    const uint8_t color_index = lcd_color565_to_332(color);
     // Draw four lines to form rectangle
-    lcd_draw_line(x, y, x + width - 1, y, color);                           // Top
-    lcd_draw_line(x, y + height - 1, x + width - 1, y + height - 1, color); // Bottom
-    lcd_draw_line(x, y, x, y + height - 1, color);                          // Left
-    lcd_draw_line(x + width - 1, y, x + width - 1, y + height - 1, color);  // Right
+    lcd_draw_line(x, y, x + width - 1, y, color_index);                           // Top
+    lcd_draw_line(x, y + height - 1, x + width - 1, y + height - 1, color_index); // Bottom
+    lcd_draw_line(x, y, x, y + height - 1, color_index);                          // Left
+    lcd_draw_line(x + width - 1, y, x + width - 1, y + height - 1, color_index);  // Right
 }
 
 /******************************************************************************
@@ -127,12 +153,14 @@ void lcd_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint
     if (y + height > LCD_HEIGHT)
         height = LCD_HEIGHT - y;
 
+    const uint8_t color_index = lcd_color565_to_332(color);
+
     // Fast fill using optimized loops
     for (uint16_t py = y; py < y + height; py++)
     {
         for (uint16_t px = x; px < x + width; px++)
         {
-            framebuffer[py * LCD_WIDTH + px] = color;
+            framebuffer[py * LCD_WIDTH + px] = color_index;
         }
     }
 }
@@ -189,26 +217,27 @@ void lcd_draw_circle(uint16_t center_x, uint16_t center_y, uint16_t radius, uint
     int x = 0;
     int y = radius;
     int d = 3 - 2 * radius;
+    const uint8_t color_index = lcd_color565_to_332(color);
 
     while (x <= y)
     {
         // Draw 8 symmetric points
         if (center_x + x < LCD_WIDTH && center_y + y < LCD_HEIGHT)
-            framebuffer[(center_y + y) * LCD_WIDTH + (center_x + x)] = color;
+            framebuffer[(center_y + y) * LCD_WIDTH + (center_x + x)] = color_index;
         if (center_x - x < LCD_WIDTH && center_y + y < LCD_HEIGHT)
-            framebuffer[(center_y + y) * LCD_WIDTH + (center_x - x)] = color;
+            framebuffer[(center_y + y) * LCD_WIDTH + (center_x - x)] = color_index;
         if (center_x + x < LCD_WIDTH && center_y - y < LCD_HEIGHT)
-            framebuffer[(center_y - y) * LCD_WIDTH + (center_x + x)] = color;
+            framebuffer[(center_y - y) * LCD_WIDTH + (center_x + x)] = color_index;
         if (center_x - x < LCD_WIDTH && center_y - y < LCD_HEIGHT)
-            framebuffer[(center_y - y) * LCD_WIDTH + (center_x - x)] = color;
+            framebuffer[(center_y - y) * LCD_WIDTH + (center_x - x)] = color_index;
         if (center_x + y < LCD_WIDTH && center_y + x < LCD_HEIGHT)
-            framebuffer[(center_y + x) * LCD_WIDTH + (center_x + y)] = color;
+            framebuffer[(center_y + x) * LCD_WIDTH + (center_x + y)] = color_index;
         if (center_x - y < LCD_WIDTH && center_y + x < LCD_HEIGHT)
-            framebuffer[(center_y + x) * LCD_WIDTH + (center_x - y)] = color;
+            framebuffer[(center_y + x) * LCD_WIDTH + (center_x - y)] = color_index;
         if (center_x + y < LCD_WIDTH && center_y - x < LCD_HEIGHT)
-            framebuffer[(center_y - x) * LCD_WIDTH + (center_x + y)] = color;
+            framebuffer[(center_y - x) * LCD_WIDTH + (center_x + y)] = color_index;
         if (center_x - y < LCD_WIDTH && center_y - x < LCD_HEIGHT)
-            framebuffer[(center_y - x) * LCD_WIDTH + (center_x - y)] = color;
+            framebuffer[(center_y - x) * LCD_WIDTH + (center_x - y)] = color_index;
 
         if (d < 0)
             d += 4 * x + 6;
@@ -279,6 +308,8 @@ void lcd_fill_circle(uint16_t center_x, uint16_t center_y, uint16_t radius, uint
     if (radius == 0 || radius > 100)
         return;
 
+    const uint8_t color_index = lcd_color565_to_332(color);
+
     int radius_squared = radius * radius;
 
     // Calculate bounding box
@@ -300,7 +331,7 @@ void lcd_fill_circle(uint16_t center_x, uint16_t center_y, uint16_t radius, uint
 
             if (distance_squared <= radius_squared)
             {
-                framebuffer[y * LCD_WIDTH + x] = color;
+                framebuffer[y * LCD_WIDTH + x] = color_index;
             }
         }
     }
@@ -349,6 +380,8 @@ void lcd_fill_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint1
     // Handle degenerate case
     if (y1 == y3)
         return;
+
+    const uint8_t color_index = lcd_color565_to_332(color);
 
     // Fill the triangle using horizontal scanlines
     for (uint16_t y = y1; y <= y3; y++)
@@ -400,7 +433,7 @@ void lcd_fill_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint1
         // Draw horizontal line
         for (int x = x_left; x <= x_right; x++)
         {
-            framebuffer[y * LCD_WIDTH + x] = color;
+            framebuffer[y * LCD_WIDTH + x] = color_index;
         }
     }
 }
@@ -413,9 +446,10 @@ returns: none
 ******************************************************************************/
 void lcd_fill(uint16_t color)
 {
+    const uint8_t color_index = lcd_color565_to_332(color);
     for (uint32_t i = 0; i < LCD_HEIGHT * LCD_WIDTH; i++)
     {
-        framebuffer[i] = color;
+        framebuffer[i] = color_index;
     }
 }
 
@@ -426,10 +460,10 @@ parameter:
     y      : Top-left Y coordinate
     width  : Width of the buffer to blit
     height : Height of the buffer to blit
-    buffer : Pointer to RGB565 pixel data array
+    buffer : Pointer to RGB332 pixel data array (8-bit per pixel)
 returns: none
 ******************************************************************************/
-void lcd_blit(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t *buffer)
+void lcd_blit(uint8_t x, uint8_t y, uint8_t width, uint8_t height, const uint8_t *buffer)
 {
     for (uint16_t j = 0; j < height; j++)
     {
@@ -727,6 +761,23 @@ void lcd_init(bool horizontal)
     lcd_write_cmd(0x29);
     sleep_ms(20);
 
+    // init palette
+    for (int i = 0; i < 256; i++)
+    {
+        // Extract RGB332 components
+        uint8_t r3 = (i >> 5) & 0x07; // 3 bits for red
+        uint8_t g3 = (i >> 2) & 0x07; // 3 bits for green
+        uint8_t b2 = i & 0x03;        // 2 bits for blue
+
+        // Convert to 8-bit RGB
+        uint8_t r8 = (r3 * 255) / 7; // Scale 3-bit to 8-bit
+        uint8_t g8 = (g3 * 255) / 7; // Scale 3-bit to 8-bit
+        uint8_t b8 = (b2 * 255) / 3; // Scale 2-bit to 8-bit
+
+        // Convert to RGB565 for the palette
+        palette[i] = lcd_color332_to_565(r8, g8, b8);
+    }
+
     lcd_backlight_init(); // Initialize backlight PWM
 
     lcd_set_font(LCD_DEFAULT_FONT_SIZE); // Set default font
@@ -828,10 +879,11 @@ void lcd_swap(void)
 
     gpio_put(LCD_DC_PIN, 1);
 
-    // Convert to big-endian and send
+    // Convert 8-bit palette indices to 16-bit RGB565 and send
     for (uint32_t i = 0; i < LCD_WIDTH * LCD_HEIGHT; i++)
     {
-        uint16_t color = framebuffer[i];
+        uint8_t palette_index = framebuffer[i];
+        uint16_t color = palette[palette_index];
         uint8_t high_byte = color >> 8;
         uint8_t low_byte = color & 0xFF;
         uint8_t data[2] = {high_byte, low_byte};

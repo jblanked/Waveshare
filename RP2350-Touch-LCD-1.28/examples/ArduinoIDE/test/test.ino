@@ -3,6 +3,7 @@
 #include "lcd.h"
 #include "qmi.h"
 #include "touch.h"
+#include "assets.h"
 
 TouchVector last_touch_point = {0, 0};
 uint8_t last_gesture = 0;
@@ -82,6 +83,21 @@ void setup()
     lcd_swap();
 
     sleep_ms(5000); // Show static demo for 5 seconds
+
+    uint8_t frame = 0;
+    uint8_t rotations = 10;
+    while (rotations--)
+    {
+        frame = 0;
+        while (frame < 3)
+        {
+            lcd_fill(COLOR_BLACK);
+            lcd_blit(110, 110, 16, 15, frame == 0 ? frame_0 : (frame == 1 ? frame_1 : frame_2));
+            lcd_swap();
+            sleep_ms(200);
+            frame++;
+        }
+    }
 }
 
 uint8_t angle = 0;

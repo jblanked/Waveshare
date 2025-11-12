@@ -7,6 +7,12 @@ class LCD:
         # Initialize LCD in horizontal mode
         init(True)
 
+    def blit(self, x: int, y: int, w: int, h: int, data: bytes):
+        """Blit a bitmap to the specified position"""
+        from waveshare_lcd import blit
+
+        blit(x, y, w, h, data)
+
     def fill_screen(self, color: int):
         """Fill the entire screen with the specified color"""
         from waveshare_lcd import fill_screen

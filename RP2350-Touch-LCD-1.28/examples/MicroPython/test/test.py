@@ -17,6 +17,8 @@ def main():
     from qmi import QMI
     from lcd import LCD
 
+    from frames import FRAME_1, FRAME_2, FRAME_3
+
     # Initialize LCD in horizontal mode
     lcd = LCD()
 
@@ -45,6 +47,24 @@ def main():
     lcd.swap()
 
     sleep_ms(5000)  # Show static demo for 5 seconds
+
+    frame = 0
+    rotations = 10
+    while rotations > 0:
+        rotations -= 1
+        frame = 0
+        while frame < 3:
+            lcd.fill_screen(COLOR_BLACK)
+            lcd.blit(
+                110,
+                110,
+                16,
+                15,
+                FRAME_1 if frame == 0 else (FRAME_2 if frame == 1 else FRAME_3),
+            )
+            lcd.swap()
+            sleep_ms(200)
+            frame += 1
 
     # Demo 2: Animation loop
     angle = 0

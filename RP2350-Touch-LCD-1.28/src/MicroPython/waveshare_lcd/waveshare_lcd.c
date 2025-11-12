@@ -117,13 +117,13 @@ STATIC mp_obj_t waveshare_lcd_blit(size_t n_args, const mp_obj_t *args)
     mp_get_buffer_raise(args[4], &bufinfo, MP_BUFFER_READ);
 
     // Verify buffer size
-    size_t expected_size = width * height * sizeof(uint16_t);
+    size_t expected_size = width * height * sizeof(uint8_t);
     if (bufinfo.len < expected_size)
     {
         mp_raise_ValueError(MP_ERROR_TEXT("buffer too small for blit operation"));
     }
 
-    lcd_blit(x, y, width, height, (uint16_t *)bufinfo.buf);
+    lcd_blit(x, y, width, height, (uint8_t *)bufinfo.buf);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(waveshare_lcd_blit_obj, 5, 5, waveshare_lcd_blit);
