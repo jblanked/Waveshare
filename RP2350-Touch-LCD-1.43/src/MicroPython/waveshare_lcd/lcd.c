@@ -149,10 +149,14 @@ note: Low-level function used internally for OLED communication
 ******************************************************************************/
 static void lcd_send_cmd_data(uint8_t cmd, const uint8_t *data, size_t data_len)
 {
-    size_t total_len = 4 + data_len;
-    uint8_t *buffer = malloc(total_len);
-    if (buffer == NULL)
+    // Use static buffer to avoid malloc in MicroPython environment
+    // Max expected size is 4 (header) + largest command data
+    static uint8_t buffer[128];
+
+    if (data_len > 124) // Safety check: 128 - 4 header bytes
         return;
+
+    size_t total_len = 4 + data_len;
 
     buffer[0] = 0x02;
     buffer[1] = 0x00;
@@ -167,8 +171,6 @@ static void lcd_send_cmd_data(uint8_t cmd, const uint8_t *data, size_t data_len)
     gpio_put(LCD_CS_PIN, 0);
     pio_qspi_1bit_write_data_blocking(buffer, total_len);
     gpio_put(LCD_CS_PIN, 1);
-
-    free(buffer);
 }
 
 /******************************************************************************
@@ -786,12 +788,17 @@ void lcd_swap(void)
         size_t pixels_in_chunk = LCD_WIDTH * lines_to_send;
 
         // Convert this chunk from RGB332 to RGB565 with byte swapping
-        for (size_t i = 0; i < pixels_in_chunk; i++)
+        for (uint16_t line = 0; line < lines_to_send; line++)
         {
-            uint8_t palette_index = framebuffer[y * LCD_WIDTH + i];
-            uint16_t color = palette[palette_index];
-            // Swap bytes: convert from host byte order to big-endian for display
-            line_buffer[i] = (color >> 8) | (color << 8);
+            for (uint16_t x = 0; x < LCD_WIDTH; x++)
+            {
+                size_t fb_index = (y + line) * LCD_WIDTH + x;
+                size_t buf_index = line * LCD_WIDTH + x;
+                uint8_t palette_index = framebuffer[fb_index];
+                uint16_t color = palette[palette_index];
+                // Swap bytes: convert from host byte order to big-endian for display
+                line_buffer[buf_index] = (color >> 8) | (color << 8);
+            }
         }
 
         // Send this chunk
