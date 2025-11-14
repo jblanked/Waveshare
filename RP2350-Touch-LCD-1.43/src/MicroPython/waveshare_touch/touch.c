@@ -37,10 +37,10 @@ static void touch_read_bytes(uint8_t reg, uint8_t *data, size_t len)
 }
 
 // Internal function to read touch data from FT6146
-static void touch_read_data(void)
+void touch_read_data(bool force)
 {
     // Check interrupt flag - only read if touch interrupt occurred
-    if (!touch_irq_flag)
+    if (!touch_irq_flag && !force)
     {
         touch_state.num_points = 0;
         return;
@@ -81,7 +81,7 @@ TouchVector touch_get_point()
     }
 
     // Read latest touch data
-    touch_read_data();
+    touch_read_data(true);
 
     if (touch_state.num_points > 0)
     {

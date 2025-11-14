@@ -39,6 +39,7 @@ extern "C"
 	void touch_init(void);
 
 	uint8_t touch_read(uint8_t reg);
+	void touch_read_data(bool force);
 	void touch_reset();
 	void touch_reset_state();
 	void touch_set_callback(gpio_irq_callback_t callback);
