@@ -215,6 +215,7 @@ STATIC mp_obj_t waveshare_sd_read(size_t n_args, const mp_obj_t *args)
     size_t bytes_read;
     const bool status = fat32_read(&file, buffer, size_of_buffer, &bytes_read) == FAT32_OK;
     fat32_close(&file);
+    buffer[bytes_read] = '\0'; // Null-terminate the buffer
     mp_obj_t result = status ? mp_obj_new_bytes(buffer, bytes_read) : mp_const_none;
     return result;
 }
