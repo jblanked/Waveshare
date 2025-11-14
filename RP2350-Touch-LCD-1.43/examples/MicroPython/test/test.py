@@ -34,12 +34,16 @@ def main():
 
     # Initialize SD card
     sd = SD()
+    
+    if not sd.active:
+        from sys import exit
+        print("SD card not found")
 
     # test SD card functionality
     sd.create_directory("/test_dir")
     sd.write("/test_dir/test_file.txt", "RP2350 Touch LCD MicroPython Demo\n")
-    content = sd.read("/test_dir/test_file.txt")
-    print(f"SD Card File Content: {content.decode()}")
+    content = sd.read("/test_dir/test_file.txt", 0, 0)
+    print(f"SD Card File Content: {content.decode('utf-8')}")
 
     # Demo 1: Static shapes
     lcd.fill_screen(COLOR_BLACK)
