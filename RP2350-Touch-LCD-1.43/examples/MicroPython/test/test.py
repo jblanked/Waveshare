@@ -15,7 +15,9 @@ def main():
     from touch import Touch
     from battery import Battery
     from qmi import QMI
+
     from lcd import LCD
+    from sd import SD
     from frames import FRAME_1, FRAME_2, FRAME_3
 
     # Initialize LCD in horizontal mode
@@ -29,6 +31,15 @@ def main():
 
     # Initialize QMI8658 sensor
     qmi = QMI()
+
+    # Initialize SD card
+    sd = SD()
+
+    # test SD card functionality
+    sd.create_directory("/test_dir")
+    sd.write("/test_dir/test_file.txt", "RP2350 Touch LCD MicroPython Demo\n")
+    content = sd.read("/test_dir/test_file.txt")
+    print(f"SD Card File Content: {content.decode()}")
 
     # Demo 1: Static shapes
     lcd.fill_screen(COLOR_BLACK)
