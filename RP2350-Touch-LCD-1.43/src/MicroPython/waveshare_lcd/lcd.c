@@ -611,6 +611,34 @@ uint8_t lcd_get_backlight_level(void)
 }
 
 /********************************************************************************
+function: Get the current font height
+parameter: none
+returns: Font height in pixels
+********************************************************************************/
+uint8_t lcd_get_font_height(void)
+{
+    if (current_font != NULL)
+    {
+        return current_font->height;
+    }
+    return 0;
+}
+
+/********************************************************************************
+function: Get the current font width
+parameter: none
+returns: Font width in pixels
+********************************************************************************/
+uint8_t lcd_get_font_width(void)
+{
+    if (current_font != NULL)
+    {
+        return current_font->width;
+    }
+    return 0;
+}
+
+/********************************************************************************
 function: Initialize the LCD display hardware and framebuffer
 returns: none
 note: Can only be called once; subsequent calls are ignored

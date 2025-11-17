@@ -128,6 +128,8 @@ extern "C"
     // Text rendering functions
     void lcd_draw_char(uint16_t x, uint16_t y, char c, uint16_t color);
     void lcd_draw_text(uint16_t x, uint16_t y, const char *text, uint16_t color);
+    uint8_t lcd_get_font_height(void);
+    uint8_t lcd_get_font_width(void);
     void lcd_set_font(FontSize size);
 
     // Low-level LCD communication functions

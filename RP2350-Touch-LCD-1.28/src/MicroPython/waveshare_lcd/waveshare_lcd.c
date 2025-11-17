@@ -293,6 +293,16 @@ STATIC mp_obj_t waveshare_lcd_draw_text(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(waveshare_lcd_draw_text_obj, 4, 4, waveshare_lcd_draw_text);
 
+// Get font size (as a tuple)
+STATIC mp_obj_t waveshare_lcd_get_font_size(void)
+{
+    uint8_t width = lcd_get_font_width();
+    uint8_t height = lcd_get_font_height();
+    mp_obj_t tuple[2] = {mp_obj_new_int(width), mp_obj_new_int(height)};
+    return mp_obj_new_tuple(2, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(waveshare_lcd_get_font_size_obj, waveshare_lcd_get_font_size);
+
 // Set font size
 STATIC mp_obj_t waveshare_lcd_set_font(size_t n_args, const mp_obj_t *args)
 {
@@ -340,6 +350,7 @@ STATIC const mp_rom_map_elem_t waveshare_lcd_module_globals_table[] = {
     // Text rendering functions
     {MP_ROM_QSTR(MP_QSTR_draw_char), MP_ROM_PTR(&waveshare_lcd_draw_char_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw_text), MP_ROM_PTR(&waveshare_lcd_draw_text_obj)},
+    {MP_ROM_QSTR(MP_QSTR_get_font_size), MP_ROM_PTR(&waveshare_lcd_get_font_size_obj)},
     {MP_ROM_QSTR(MP_QSTR_set_font), MP_ROM_PTR(&waveshare_lcd_set_font_obj)},
 
     // Font size constants
