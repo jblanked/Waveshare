@@ -34,10 +34,12 @@ def main():
 
     # Initialize SD card
     sd = SD()
-    
+
     if not sd.active:
         from sys import exit
+
         print("SD card not found")
+        exit()
 
     # test SD card functionality
     sd.create_directory("/test_dir")

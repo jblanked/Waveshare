@@ -13,11 +13,23 @@ class LCD:
 
         blit(x, y, w, h, data)
 
+    def draw_pixel(self, x: int, y: int, color: int):
+        """Draw a single pixel at the specified position with the given color"""
+        from waveshare_lcd import draw_pixel
+
+        draw_pixel(x, y, color)
+
     def fill_screen(self, color: int):
         """Fill the entire screen with the specified color"""
         from waveshare_lcd import fill_screen
 
         fill_screen(color)
+
+    def set_font(self, font: int):
+        """Set the font for text rendering"""
+        from waveshare_lcd import set_font
+
+        set_font(font)
 
     def swap(self):
         """Swap the display buffer to update the screen"""
