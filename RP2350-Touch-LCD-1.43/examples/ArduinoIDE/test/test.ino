@@ -19,96 +19,95 @@ void touch_callback(uint gpio, uint32_t events)
     {
         return;
     }
-
     TouchVector last_touch_point = touch_get_point();
     if (last_touch_point.x != 0 || last_touch_point.y != 0)
     {
-        printf("Touch at (%d, %d)\r\n", last_touch_point.x, last_touch_point.y);
-        printf("Battery percentage: %d%%, voltage: %.2f V\r\n", battery_get_percentage(), battery_get_voltage());
+        Serial.printf("Touch at (%d, %d)\r\n", last_touch_point.x, last_touch_point.y);
+        Serial.printf("Battery percentage: %d%%, voltage: %.2f V\r\n", battery_get_percentage(), battery_get_voltage());
     }
 }
 
 void test_sd_card_operations()
 {
-    printf("\n=== Waveshare Touch LCD SD Card Test ===\n");
+    Serial.printf("\n=== Waveshare Touch LCD SD Card Test ===\n");
 
     // Initialize SD card
-    printf("Initializing SD card...\n");
+    Serial.printf("Initializing SD card...\n");
     sd_init();
 
     // Initialize SD card
-    printf("Initializing SD card communication...\n");
+    Serial.printf("Initializing SD card communication...\n");
     sd_error_t init_result = sd_card_init();
     if (init_result != SD_OK)
     {
-        printf("ERROR: SD card initialization failed: %s\n", sd_error_string(init_result));
-        printf("Check SPI connections:\n");
-        printf("  MISO (GPIO %d) - SD card DO pin\n", SD_MISO);
-        printf("  MOSI (GPIO %d) - SD card DI pin\n", SD_MOSI);
-        printf("  SCK  (GPIO %d) - SD card CLK pin\n", SD_SCK);
-        printf("  CS   (GPIO %d) - SD card CS pin\n", SD_CS);
+        Serial.printf("ERROR: SD card initialization failed: %s\n", sd_error_string(init_result));
+        Serial.printf("Check SPI connections:\n");
+        Serial.printf("  MISO (GPIO %d) - SD card DO pin\n", SD_MISO);
+        Serial.printf("  MOSI (GPIO %d) - SD card DI pin\n", SD_MOSI);
+        Serial.printf("  SCK  (GPIO %d) - SD card CLK pin\n", SD_SCK);
+        Serial.printf("  CS   (GPIO %d) - SD card CS pin\n", SD_CS);
         return;
     }
-    printf("✓ SD card initialized successfully!\n");
+    Serial.printf("✓ SD card initialized successfully!\n");
 
     // Check card type
     if (sd_is_sdhc())
     {
-        printf("✓ Card type: SDHC/SDXC (High Capacity)\n");
+        Serial.printf("✓ Card type: SDHC/SDXC (High Capacity)\n");
     }
     else
     {
-        printf("✓ Card type: SDSC (Standard Capacity)\n");
+        Serial.printf("✓ Card type: SDSC (Standard Capacity)\n");
     }
 
     // Prepare test data
-    printf("\nPreparing test data...\n");
+    Serial.printf("\nPreparing test data...\n");
     memset(write_buffer, 0, sizeof(write_buffer));
     strncpy((char *)write_buffer, test_data, sizeof(test_data));
-    printf("Test data: %.60s...\n", write_buffer);
+    Serial.printf("Test data: %.60s...\n", write_buffer);
 
     // Test block write (block 100 - safe area on most cards)
     uint32_t test_block = 100;
-    printf("\nWriting test data to block %d...\n", test_block);
+    Serial.printf("\nWriting test data to block %d...\n", test_block);
     sd_error_t write_result = sd_write_block(test_block, write_buffer);
     if (write_result != SD_OK)
     {
-        printf("ERROR: Write failed: %s\n", sd_error_string(write_result));
+        Serial.printf("ERROR: Write failed: %s\n", sd_error_string(write_result));
         return;
     }
-    printf("✓ Write successful!\n");
+    Serial.printf("✓ Write successful!\n");
 
     // Clear read buffer
     memset(read_buffer, 0, sizeof(read_buffer));
 
     // Test block read
-    printf("Reading data back from block %d...\n", test_block);
+    Serial.printf("Reading data back from block %d...\n", test_block);
     sd_error_t read_result = sd_read_block(test_block, read_buffer);
     if (read_result != SD_OK)
     {
-        printf("ERROR: Read failed: %s\n", sd_error_string(read_result));
+        Serial.printf("ERROR: Read failed: %s\n", sd_error_string(read_result));
         return;
     }
-    printf("✓ Read successful!\n");
+    Serial.printf("✓ Read successful!\n");
 
     // Verify data
-    printf("\nVerifying data integrity...\n");
-    printf("Original:  %.60s...\n", write_buffer);
-    printf("Read back: %.60s...\n", read_buffer);
+    Serial.printf("\nVerifying data integrity...\n");
+    Serial.printf("Original:  %.60s...\n", write_buffer);
+    Serial.printf("Read back: %.60s...\n", read_buffer);
 
     if (memcmp(write_buffer, read_buffer, strlen(test_data)) == 0)
     {
-        printf("✓ Data verification PASSED! Read/Write working correctly.\n");
+        Serial.printf("✓ Data verification PASSED! Read/Write working correctly.\n");
     }
     else
     {
-        printf("✗ Data verification FAILED! Data corruption detected.\n");
-        printf("This might indicate SPI timing issues or connection problems.\n");
+        Serial.printf("✗ Data verification FAILED! Data corruption detected.\n");
+        Serial.printf("This might indicate SPI timing issues or connection problems.\n");
         return;
     }
 
     // Test multiple block operations
-    printf("\nTesting multiple block operations...\n");
+    Serial.printf("\nTesting multiple block operations...\n");
     uint32_t start_block = 200;
     uint32_t num_blocks = 3;
 
@@ -123,50 +122,50 @@ void test_sd_card_operations()
                  start_block + i, i + 1);
     }
 
-    printf("Writing %d blocks starting at block %d...\n", num_blocks, start_block);
+    Serial.printf("Writing %d blocks starting at block %d...\n", num_blocks, start_block);
     sd_error_t multi_write_result = sd_write_blocks(start_block, num_blocks, multi_write_buffer);
     if (multi_write_result != SD_OK)
     {
-        printf("ERROR: Multi-block write failed: %s\n", sd_error_string(multi_write_result));
+        Serial.printf("ERROR: Multi-block write failed: %s\n", sd_error_string(multi_write_result));
     }
     else
     {
-        printf("✓ Multi-block write successful!\n");
+        Serial.printf("✓ Multi-block write successful!\n");
 
-        printf("Reading %d blocks back...\n", num_blocks);
+        Serial.printf("Reading %d blocks back...\n", num_blocks);
         sd_error_t multi_read_result = sd_read_blocks(start_block, num_blocks, multi_read_buffer);
         if (multi_read_result != SD_OK)
         {
-            printf("ERROR: Multi-block read failed: %s\n", sd_error_string(multi_read_result));
+            Serial.printf("ERROR: Multi-block read failed: %s\n", sd_error_string(multi_read_result));
         }
         else
         {
-            printf("✓ Multi-block read successful!\n");
+            Serial.printf("✓ Multi-block read successful!\n");
 
             // Show some data from each block
             for (int i = 0; i < 3; i++)
             {
-                printf("Block %d: %.50s...\n", start_block + i, &multi_read_buffer[i * 512]);
+                Serial.printf("Block %d: %.50s...\n", start_block + i, &multi_read_buffer[i * 512]);
             }
 
             if (memcmp(multi_write_buffer, multi_read_buffer, 512 * 3) == 0)
             {
-                printf("✓ Multi-block verification PASSED!\n");
+                Serial.printf("✓ Multi-block verification PASSED!\n");
             }
             else
             {
-                printf("✗ Multi-block verification FAILED!\n");
+                Serial.printf("✗ Multi-block verification FAILED!\n");
             }
         }
     }
 
-    printf("\n=== SD Card Test Complete ===\n");
-    printf("If all tests passed, your Waveshare Touch LCD SD card interface is working correctly!\n");
+    Serial.printf("\n=== SD Card Test Complete ===\n");
+    Serial.printf("If all tests passed, your Waveshare Touch LCD SD card interface is working correctly!\n");
 }
 
 void test_file_operations()
 {
-    printf("\n=== FAT32 File System Test ===\n");
+    Serial.printf("\n=== FAT32 File System Test ===\n");
 
     const char *test_filename = "waveshare_lcd_test.txt";
     const char *write_data = "Hello from Waveshare Touch LCD!\n"
@@ -182,33 +181,33 @@ void test_file_operations()
     fat32_error_t result;
 
     // Test 1: Create/Write to file
-    printf("Creating and writing to file: %s\n", test_filename);
+    Serial.printf("Creating and writing to file: %s\n", test_filename);
 
     result = fat32_create(&file, test_filename);
     if (result != FAT32_OK)
     {
-        printf("Failed to create file: %d\n", result);
+        Serial.printf("Failed to create file: %d\n", result);
         return;
     }
 
     result = fat32_write(&file, write_data, strlen(write_data), &bytes_written);
     if (result != FAT32_OK)
     {
-        printf("Failed to write to file: %d\n", result);
+        Serial.printf("Failed to write to file: %d\n", result);
         fat32_close(&file);
         return;
     }
 
     fat32_close(&file);
-    printf("✓ File created and written successfully! (%zu bytes)\n", bytes_written);
+    Serial.printf("✓ File created and written successfully! (%zu bytes)\n", bytes_written);
 
     // Test 2: Read from file
-    printf("Reading from file: %s\n", test_filename);
+    Serial.printf("Reading from file: %s\n", test_filename);
 
     result = fat32_open(&file, test_filename);
     if (result != FAT32_OK)
     {
-        printf("Failed to open file for reading: %d\n", result);
+        Serial.printf("Failed to open file for reading: %d\n", result);
         return;
     }
 
@@ -216,38 +215,38 @@ void test_file_operations()
     result = fat32_read(&file, read_buffer, sizeof(read_buffer) - 1, &bytes_read);
     if (result != FAT32_OK)
     {
-        printf("Failed to read from file: %d\n", result);
+        Serial.printf("Failed to read from file: %d\n", result);
         fat32_close(&file);
         return;
     }
 
     fat32_close(&file);
-    printf("✓ File read successfully! (%zu bytes)\n", bytes_read);
+    Serial.printf("✓ File read successfully! (%zu bytes)\n", bytes_read);
 
     // Test 3: Verify data integrity
-    printf("\nFile Contents:\n");
-    printf("----------------------------------------\n");
-    printf("%s", read_buffer);
-    printf("----------------------------------------\n");
+    Serial.printf("\nFile Contents:\n");
+    Serial.printf("----------------------------------------\n");
+    Serial.printf("%s", read_buffer);
+    Serial.printf("----------------------------------------\n");
 
     if (strncmp(write_data, read_buffer, strlen(write_data)) == 0)
     {
-        printf("✓ File data verification PASSED!\n");
+        Serial.printf("✓ File data verification PASSED!\n");
     }
     else
     {
-        printf("✗ File data verification FAILED!\n");
-        printf("Expected: %.50s...\n", write_data);
-        printf("Got:      %.50s...\n", read_buffer);
+        Serial.printf("✗ File data verification FAILED!\n");
+        Serial.printf("Expected: %.50s...\n", write_data);
+        Serial.printf("Got:      %.50s...\n", read_buffer);
     }
 
-    printf("\n=== File System Test Complete ===\n");
+    Serial.printf("\n=== File System Test Complete ===\n");
 }
 
 void setup()
 {
     Serial.begin(115200);
-    Serial.println("Hello, RP2350-Touch-LCD-1.28!");
+    Serial.println("Hello, RP2350-Touch-LCD-1.43!");
 
     // Wait a moment for serial connection
     sleep_ms(2000);
@@ -256,7 +255,7 @@ void setup()
     test_sd_card_operations();
 
     // Initialize FAT32 if tests passed
-    printf("\nInitializing FAT32 filesystem...\n");
+    Serial.printf("\nInitializing FAT32 filesystem...\n");
     fat32_init();
 
     // Run file system tests
@@ -313,26 +312,26 @@ char gyro_text[50];
 void loop()
 {
     // Clear screen
-        lcd_fill(COLOR_BLACK);
+    lcd_fill(COLOR_BLACK);
 
-        qmi_read_xyz(acc, gyro, &tim_count);
-        snprintf(acc_text, sizeof(acc_text), "X=%4.1f Y=%4.1f Z=%4.1f", acc[0], acc[1], acc[2]);
-        snprintf(gyro_text, sizeof(gyro_text), "X=%4.1f Y=%4.1f Z=%4.1f", gyro[0], gyro[1], gyro[2]);
-        lcd_draw_text(90, 120, acc_text, COLOR_WHITE);
-        lcd_draw_text(90, 360, gyro_text, COLOR_WHITE);
+    qmi_read_xyz(acc, gyro, &tim_count);
+    snprintf(acc_text, sizeof(acc_text), "X=%4.1f Y=%4.1f Z=%4.1f", acc[0], acc[1], acc[2]);
+    snprintf(gyro_text, sizeof(gyro_text), "X=%4.1f Y=%4.1f Z=%4.1f", gyro[0], gyro[1], gyro[2]);
+    lcd_draw_text(90, 120, acc_text, COLOR_WHITE);
+    lcd_draw_text(90, 360, gyro_text, COLOR_WHITE);
 
-        // Draw a circle that changes size
-        uint8_t radius = 30 + (angle % 10);
-        lcd_draw_circle(240, 240, radius, COLOR_CYAN);
+    // Draw a circle that changes size
+    uint8_t radius = 30 + (angle % 10);
+    lcd_draw_circle(240, 240, radius, COLOR_CYAN);
 
-        // Draw rotating line
-        int line_x = 240 + (angle % 40) - 20;
-        int line_y = 240 + (angle % 30) - 15;
-        lcd_draw_line(240, 240, line_x, line_y, COLOR_YELLOW);
+    // Draw rotating line
+    int line_x = 240 + (angle % 40) - 20;
+    int line_y = 240 + (angle % 30) - 15;
+    lcd_draw_line(240, 240, line_x, line_y, COLOR_YELLOW);
 
-        // Update display
-        lcd_swap();
+    // Update display
+    lcd_swap();
 
-        // Update for next frame
-        angle++;
+    // Update for next frame
+    angle++;
 }

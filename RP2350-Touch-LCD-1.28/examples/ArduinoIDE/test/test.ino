@@ -18,25 +18,25 @@ void touch_callback(uint gpio, uint32_t events)
     switch (last_gesture)
     {
     case TOUCH_GESTURE_UP:
-        printf("Gesture: UP\r\n");
+        Serial.printf("Gesture: UP\r\n");
         break;
     case TOUCH_GESTURE_DOWN:
-        printf("Gesture: DOWN\r\n");
+        Serial.printf("Gesture: DOWN\r\n");
         break;
     case TOUCH_GESTURE_LEFT:
-        printf("Gesture: LEFT\r\n");
+        Serial.printf("Gesture: LEFT\r\n");
         break;
     case TOUCH_GESTURE_RIGHT:
-        printf("Gesture: RIGHT\r\n");
+        Serial.printf("Gesture: RIGHT\r\n");
         break;
     case TOUCH_GESTURE_CLICK:
-        printf("Gesture: CLICK\r\n");
+        Serial.printf("Gesture: CLICK\r\n");
         break;
     case TOUCH_GESTURE_DOUBLE_CLICK:
-        printf("Gesture: DOUBLE CLICK\r\n");
+        Serial.printf("Gesture: DOUBLE CLICK\r\n");
         break;
     case TOUCH_GESTURE_LONG_PRESS:
-        printf("Gesture: LONG PRESS\r\n");
+        Serial.printf("Gesture: LONG PRESS\r\n");
         break;
     default:
         break;
@@ -47,8 +47,8 @@ void touch_callback(uint gpio, uint32_t events)
         last_touch_point = touch_get_point();
         if (last_touch_point.x != 0 || last_touch_point.y != 0)
         {
-            printf("Touch at (%d, %d)\r\n", last_touch_point.x, last_touch_point.y);
-            printf("Battery percentage: %d%%, voltage: %.2f V\r\n", battery_get_percentage(), battery_get_voltage());
+            Serial.printf("Touch at (%d, %d)\r\n", last_touch_point.x, last_touch_point.y);
+            Serial.printf("Battery percentage: %d%%, voltage: %.2f V\r\n", battery_get_percentage(), battery_get_voltage());
         }
     }
 }
