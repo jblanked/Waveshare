@@ -44,7 +44,7 @@ TouchVector touch_get_point()
     }
 
     // Read latest touch data
-    touch_read_state();
+    touch_read_data();
 
     if (touch_state.finger > 0)
     {
